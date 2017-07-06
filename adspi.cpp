@@ -179,3 +179,23 @@ void adspiClass::control_cfg(int clk_sel, int mode, int power, int ref_en, int c
 
   Serial.println("Controls configured.");
 }
+
+void adspiClass::start_exclk(int pin)
+{
+  pinMode(pin, OUTPUT);
+  NRF_TIMER2->MODE        = TIMER_MODE_MODE_Timer;       // Set the timer in Timer Mode.
+  NRF_TIMER2->PRESCALER   = 0;                          
+  NRF_TIMER2->BITMODE     = TIMER_BITMODE_BITMODE_16Bit; // 16 bit mode.
+  NRF_TIMER2->TASKS_CLEAR = 1;
+  NRF_TIMER2->CC[0]       = 2;
+  NRF_TIMER2->EVENTS_COMPARE[0] = 0;
+  NRF_TIMER2->SHORTS      = (TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos);
+  NRF_PPI->CH[0].EEP = (uint32_t)&NRF_TIMER2->EVENTS_COMPARE[0];
+  NRF_PPI->CH[0].TEP = (uint32_t)&NRF_GPIOTE->TASKS_OUT[0];
+  NRF_PPI->CHEN = (PPI_CHEN_CH0_Enabled << PPI_CHEN_CH0_Pos);
+  
+  nrf_gpiote_task_config(0, pin, NRF_GPIOTE_POLARITY_TOGGLE, NRF_GPIOTE_INITIAL_VALUE_LOW);
+
+  NRF_TIMER2->TASKS_START = 1;
+}
+

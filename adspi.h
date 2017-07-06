@@ -6,6 +6,7 @@
 
 #define ADSPI_CS              (21)
 #define ADSPI_EXCLK           (14)
+
 // read commands
 #define COMM_R_STAT         (0x40)
 #define COMM_R_CTRL         (0x41)
@@ -52,7 +53,7 @@
 class adspiClass {
 public:
   int       verify();
-  
+
   int       comm(int command, int value); 
   uint8_t   status();
   uint8_t   err();
@@ -63,6 +64,7 @@ public:
   void      setup_cfg(int setup_n);
   void      diag_cfg(int config_n);
   void      control_cfg(int clk_sel, int mode, int power, int ref_en, int cs_en, int data_status, int cont_read, int dout_rdy);
+  void      start_exclk(int pin);
 };
 
 extern adspiClass adspi;
