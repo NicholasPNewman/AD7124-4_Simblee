@@ -2,7 +2,8 @@
 
 adspiClass adspi;
 
-int adspiClass::comm(int command, int value) {
+int adspiClass::comm(int command, int value) 
+{
   uint8_t dat_in;
   
   // take the SS pin low to select the chip:
@@ -10,7 +11,6 @@ int adspiClass::comm(int command, int value) {
   //  send in the address and value via SPI:
   SPI.transfer(command);
   dat_in = (SPI.transfer(value));
-  Serial.println(dat_in);
   // take the SS pin high to de-select the chip:
   digitalWrite(ADSPI_CS, HIGH); 
 
@@ -18,7 +18,8 @@ int adspiClass::comm(int command, int value) {
 }
 
 // @brief: reads ID register and returns 1 for correct response and 0 for incorrect
-int adspiClass::verify() {
+int adspiClass::verify() 
+{
   uint8_t dat_in;
   uint8_t dat_valid = 4;
   digitalWrite(ADSPI_CS, LOW);
@@ -34,7 +35,8 @@ int adspiClass::verify() {
 }
 
 // @brief: returns the contents of the status register
-uint8_t adspiClass::status() {
+uint8_t adspiClass::status() 
+{
   uint8_t dat_in;
   digitalWrite(ADSPI_CS, LOW);
   SPI.transfer(COMM_R_STAT);
@@ -44,7 +46,8 @@ uint8_t adspiClass::status() {
 }
 
 // @brief: returns the contents of the error register
-uint8_t adspiClass::err() {
+uint8_t adspiClass::err() 
+{
   uint8_t dat_in;
   digitalWrite(ADSPI_CS, LOW);
   SPI.transfer(COMM_R_ERR);
@@ -54,7 +57,8 @@ uint8_t adspiClass::err() {
 }
 
 // @breif: returns the contents of the config register (16 bit)
-uint16_t adspiClass::getconfig(int setup_n){
+uint16_t adspiClass::getconfig(int setup_n)
+{
   if ((setup_n < 0) || (setup_n > 7)) {
     return 0;
   }
@@ -71,7 +75,8 @@ uint16_t adspiClass::getconfig(int setup_n){
 }
 
 // @breif: returns the contents of the filter register (24 bit)
-int adspiClass::getfilter(int setup_n) {
+int adspiClass::getfilter(int setup_n) 
+{
   if ((setup_n < 0) || (setup_n > 7)) {
     return 0;
   }
@@ -90,7 +95,8 @@ int adspiClass::getfilter(int setup_n) {
 }
 
 // @breif: request data and read 24-bit converted value
-int adspiClass::data() {
+int adspiClass::data() 
+{
   uint8_t dat_in1;
   uint8_t dat_in2;
   uint8_t dat_in3;
@@ -105,7 +111,8 @@ int adspiClass::data() {
   return dat_24;  
 }
 // @brief: configure an individual channel
-void adspiClass::channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, int c_ainm) {
+void adspiClass::channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, int c_ainm) 
+{
   uint16_t ch_config;
   uint8_t  config_1;
   uint8_t  config_2;
@@ -131,18 +138,21 @@ void adspiClass::channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, i
 }
 
 // @brief: configure an individual setup
-void adspiClass::setup_cfg(int setup_n) {
+void adspiClass::setup_cfg(int setup_n) 
+{
   Serial.println("Setups configured.");
 }
 
 // @brief: configure system diagnostics
-void adspiClass::diag_cfg(int config_n) {
+void adspiClass::diag_cfg(int config_n) 
+{
   Serial.println("Diagnostics configured.");
 }
 
 // @brief: configure  ADC control
 void adspiClass::control_cfg(int clk_sel, int mode, int power, int ref_en, int cs_en, int data_status,
-                       int cont_read, int dout_rdy) {
+                       int cont_read, int dout_rdy) 
+{
   uint16_t ctrl_config;
   uint8_t  config_1;
   uint8_t  config_2;

@@ -5,7 +5,7 @@
 #include "SPI.h"
 
 #define ADSPI_CS              (21)
-
+#define ADSPI_EXCLK           (14)
 // read commands
 #define COMM_R_STAT         (0x40)
 #define COMM_R_CTRL         (0x41)

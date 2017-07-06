@@ -5,7 +5,7 @@ err				KEYWORD2
 getconfig		KEYWORD2
 getfilter		KEYWORD2
 data			KEYWORD2
-chanel_cfg		KEYWORD2
+channel_cfg		KEYWORD2
 setup_cfg		KEYWORD2
 diag_cfg		KEYWORD2
 control_cfg		KEYWORD2
