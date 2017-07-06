@@ -2,6 +2,12 @@
 
 adspiClass adspi;
 
+void adspiClass::start(void){
+  pinMode(ADSPI_CS, OUTPUT);
+  start_exclk(ADSPI_EXCLK);
+  start_timer();
+}
+
 int adspiClass::comm(int command, int value) 
 {
   uint8_t dat_in;
@@ -199,3 +205,25 @@ void adspiClass::start_exclk(int pin)
   NRF_TIMER2->TASKS_START = 1;
 }
 
+void adspiClass::start_timer(void)
+{
+  NRF_TIMER0->TASKS_STOP = 1;               // stop timer
+  NRF_TIMER0->MODE = TIMER_MODE_MODE_Timer; // set to Timer mode
+  NRF_TIMER0->BITMODE = (TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos);
+  NRF_TIMER0->PRESCALER = 4;                // 16MHz / (2 ^ prescaler), adj clk freq
+  NRF_TIMER0->TASKS_CLEAR = 1;              // clear timer
+  NRF_TIMER0->CC[0] = 95;
+  NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;
+  NRF_TIMER0->SHORTS = (TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos);
+  dynamic_attachInterrupt(TIMER0_IRQn, TIMER_IRQHandler);
+  NRF_TIMER0->TASKS_START = 1;
+}
+
+void TIMER_IRQHandler(void){
+  if (NRF_TIMER0->EVENTS_COMPARE[0])
+  {
+    NRF_TIMER0->EVENTS_COMPARE[0] = 0;
+    NRF_TIMER0->TASKS_CLEAR = 1;
+    data();
+  }
+}

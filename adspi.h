@@ -52,19 +52,23 @@
 
 class adspiClass {
 public:
-  int       verify();
-
+  void      start(void);
+  int       verify(void);
   int       comm(int command, int value); 
-  uint8_t   status();
-  uint8_t   err();
+  uint8_t   status(void);
+  uint8_t   err(void);
   uint16_t  getconfig(int setup_n);
   int       getfilter(int setup_n);
-  int       data();
+  int       data(void);
   void      channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, int c_ainm);
   void      setup_cfg(int setup_n);
   void      diag_cfg(int config_n);
   void      control_cfg(int clk_sel, int mode, int power, int ref_en, int cs_en, int data_status, int cont_read, int dout_rdy);
+private:
   void      start_exclk(int pin);
+  void      start_timer(void);
+  void      TIMER_IRQHandler(void);
+
 };
 
 extern adspiClass adspi;
