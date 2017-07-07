@@ -215,7 +215,9 @@ void adspiClass::start_timer(void)
   NRF_TIMER0->CC[0] = 95;
   NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;
   NRF_TIMER0->SHORTS = (TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos);
-  dynamic_attachInterrupt(TIMER0_IRQn, TIMER_IRQHandler);
+  
+  // current unresolved issue line, TIMER_IRQHandler doesn't point properly to l#224 below
+  // dynamic_attachInterrupt(TIMER0_IRQn, TIMER_IRQHandler);
   NRF_TIMER0->TASKS_START = 1;
 }
 
