@@ -10,3 +10,6 @@ setup_cfg		KEYWORD2
 diag_cfg		KEYWORD2
 control_cfg		KEYWORD2
 start			KEYWORD2
+channels		KEYWORD2
+control 		KEYWORD2
+reset			KEYWORD2

@@ -23,6 +23,16 @@ int adspiClass::comm(int command, int value)
   return dat_in;
 }
 
+void adspiClass::reset(void)
+{
+  int i = 0;
+  digitalWrite(ADSPI_CS, LOW);
+  for (a = 0; a < 8; a++){
+    SPI.transfer(0xF);
+  }
+  digitalWrite(ADSPI_CS, HIGH);
+}
+
 // @brief: reads ID register and returns 1 for correct response and 0 for incorrect
 int adspiClass::verify() 
 {
@@ -46,6 +56,32 @@ uint8_t adspiClass::status()
   uint8_t dat_in;
   digitalWrite(ADSPI_CS, LOW);
   SPI.transfer(COMM_R_STAT);
+  dat_in = SPI.transfer(0);
+  digitalWrite(ADSPI_CS, HIGH);
+  return dat_in;
+}
+
+// @breif: returns the contents of the control register (16 bit)
+uint16_t adspiClass::control(void)
+{
+  uint8_t dat_in1;
+  uint8_t dat_in2;
+  uint16_t dat_16;
+  digitalWrite(ADSPI_CS, LOW);
+  SPI.transfer(COMM_R_CTRL);
+  dat_in1 = SPI.transfer(0);
+  dat_in2 = SPI.transfer(0);
+  digitalWrite(ADSPI_CS, HIGH);
+  dat_16 = (dat_in1 << 8) + dat_in2;
+  return dat_16;  
+}
+
+// @brief: returns the contents of a channel register
+uint8_t adspiClass::channels(int channel_n) 
+{
+  uint8_t dat_in;
+  digitalWrite(ADSPI_CS, LOW);
+  SPI.transfer(COMM_R_CHANNEL + channel_n);
   dat_in = SPI.transfer(0);
   digitalWrite(ADSPI_CS, HIGH);
   return dat_in;

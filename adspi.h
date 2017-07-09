@@ -56,6 +56,8 @@ public:
   int       verify(void);
   int       comm(int command, int value); 
   uint8_t   status(void);
+  uint16_t  control(void);
+  uint8_t   channels(int channel_n); 
   uint8_t   err(void);
   uint16_t  getconfig(int setup_n);
   int       getfilter(int setup_n);
