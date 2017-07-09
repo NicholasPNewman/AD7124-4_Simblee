@@ -5,7 +5,7 @@ adspiClass adspi;
 void adspiClass::start(void){
   pinMode(ADSPI_CS, OUTPUT);
   start_exclk(ADSPI_EXCLK);
-  start_timer();
+  // start_timer();
 }
 
 int adspiClass::comm(int command, int value) 
@@ -116,6 +116,20 @@ int adspiClass::data()
   dat_24 = (dat_in1 << 16) + (dat_in2 << 8) + dat_in3;
   return dat_24;  
 }
+
+int adspiClass::data_cont_read() 
+{
+  uint8_t dat_in1;
+  uint8_t dat_in2;
+  uint8_t dat_in3;
+  int dat_24;
+  digitalWrite(ADSPI_CS, LOW);
+  dat_in1 = SPI.transfer(0);
+  dat_in2 = SPI.transfer(0);
+  dat_in3 = SPI.transfer(0);
+  dat_24 = (dat_in1 << 16) + (dat_in2 << 8) + dat_in3;
+  return dat_24;  
+}
 // @brief: configure an individual channel
 void adspiClass::channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, int c_ainm) 
 {
@@ -138,21 +152,19 @@ void adspiClass::channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, i
   SPI.transfer(config_1);
   SPI.transfer(config_2);
   digitalWrite(ADSPI_CS, HIGH);
-
-  Serial.println("Channels configured.");
   
 }
 
 // @brief: configure an individual setup
 void adspiClass::setup_cfg(int setup_n) 
 {
-  Serial.println("Setups configured.");
+  // TODO: implement
 }
 
 // @brief: configure system diagnostics
 void adspiClass::diag_cfg(int config_n) 
 {
-  Serial.println("Diagnostics configured.");
+  // TODO: implement
 }
 
 // @brief: configure  ADC control
@@ -182,8 +194,6 @@ void adspiClass::control_cfg(int clk_sel, int mode, int power, int ref_en, int c
   SPI.transfer(config_1);
   SPI.transfer(config_2);
   digitalWrite(ADSPI_CS, HIGH);
-
-  Serial.println("Controls configured.");
 }
 
 void adspiClass::start_exclk(int pin)
@@ -205,27 +215,27 @@ void adspiClass::start_exclk(int pin)
   NRF_TIMER2->TASKS_START = 1;
 }
 
-void adspiClass::start_timer(void)
-{
-  NRF_TIMER0->TASKS_STOP = 1;               // stop timer
-  NRF_TIMER0->MODE = TIMER_MODE_MODE_Timer; // set to Timer mode
-  NRF_TIMER0->BITMODE = (TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos);
-  NRF_TIMER0->PRESCALER = 4;                // 16MHz / (2 ^ prescaler), adj clk freq
-  NRF_TIMER0->TASKS_CLEAR = 1;              // clear timer
-  NRF_TIMER0->CC[0] = 95;
-  NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;
-  NRF_TIMER0->SHORTS = (TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos);
+// void adspiClass::start_timer(void)
+// {
+//   NRF_TIMER0->TASKS_STOP = 1;               // stop timer
+//   NRF_TIMER0->MODE = TIMER_MODE_MODE_Timer; // set to Timer mode
+//   NRF_TIMER0->BITMODE = (TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos);
+//   NRF_TIMER0->PRESCALER = 4;                // 16MHz / (2 ^ prescaler), adj clk freq
+//   NRF_TIMER0->TASKS_CLEAR = 1;              // clear timer
+//   NRF_TIMER0->CC[0] = 95;
+//   NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;
+//   NRF_TIMER0->SHORTS = (TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos);
   
-  // current unresolved issue line, TIMER_IRQHandler doesn't point properly to l#224 below
-  // dynamic_attachInterrupt(TIMER0_IRQn, TIMER_IRQHandler);
-  NRF_TIMER0->TASKS_START = 1;
-}
+//   // current unresolved issue line, TIMER_IRQHandler doesn't point properly to l#224 below
+//   // dynamic_attachInterrupt(TIMER0_IRQn, TIMER_IRQHandler);
+//   NRF_TIMER0->TASKS_START = 1;
+// }
 
-void TIMER_IRQHandler(void){
-  if (NRF_TIMER0->EVENTS_COMPARE[0])
-  {
-    NRF_TIMER0->EVENTS_COMPARE[0] = 0;
-    NRF_TIMER0->TASKS_CLEAR = 1;
-    data();
-  }
-}
+// void TIMER_IRQHandler(void){
+//   if (NRF_TIMER0->EVENTS_COMPARE[0])
+//   {
+//     NRF_TIMER0->EVENTS_COMPARE[0] = 0;
+//     NRF_TIMER0->TASKS_CLEAR = 1;
+//     //data();
+//   }
+// }

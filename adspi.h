@@ -60,6 +60,7 @@ public:
   uint16_t  getconfig(int setup_n);
   int       getfilter(int setup_n);
   int       data(void);
+  int       data_cont_read(void);
   void      channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, int c_ainm);
   void      setup_cfg(int setup_n);
   void      diag_cfg(int config_n);
