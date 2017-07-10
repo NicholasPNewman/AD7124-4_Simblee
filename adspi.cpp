@@ -26,6 +26,7 @@ int adspiClass::comm(int command, int value)
 void adspiClass::reset(void)
 {
   int i = 0;
+  
   digitalWrite(ADSPI_CS, LOW);
   for (a = 0; a < 8; a++){
     SPI.transfer(0xF);

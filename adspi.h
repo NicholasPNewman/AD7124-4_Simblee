@@ -4,7 +4,10 @@
 #include <Arduino.h>
 #include "SPI.h"
 
-#define ADSPI_CS              (21)
+#ifndef ADSPI_CS
+#define ADSPI_CS (21)
+#endif
+
 #define ADSPI_EXCLK           (14)
 
 // read commands
@@ -54,7 +57,8 @@ class adspiClass {
 public:
   void      start(void);
   int       verify(void);
-  int       comm(int command, int value); 
+  int       comm(int command, int value);
+  void      reset(void); 
   uint8_t   status(void);
   uint16_t  control(void);
   uint8_t   channels(int channel_n); 
