@@ -476,7 +476,7 @@ int32_t AD7124_Setup(ad7124_device *device, int slave_select,
 	device->spi_rdy_poll_cnt = 25000;
 
 	/* Initialize the SPI communication. */
-	ret = SPI_Init(0, 1000000, 1, 0);
+	ret = SPI_Init(0, 4000000, 1, 0);
 	if (ret < 0)
 		return ret;
 

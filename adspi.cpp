@@ -28,7 +28,7 @@ void adspiClass::reset(void)
   int i = 0;
   
   digitalWrite(ADSPI_CS, LOW);
-  for (a = 0; a < 8; a++){
+  for (i = 0; i < 8; i++){
     SPI.transfer(0xF);
   }
   digitalWrite(ADSPI_CS, HIGH);

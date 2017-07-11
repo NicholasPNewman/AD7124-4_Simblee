@@ -43,6 +43,8 @@
 /******************************************************************************/
 #include "Communication.h"
 #include "SPI.h"
+#include "Arduino.h"
+#include "adspi.h"
 
 /***************************************************************************//**
  * @brief Initializes the SPI communication peripheral.
@@ -92,10 +94,10 @@ unsigned char SPI_Read(unsigned char slaveDeviceId,
 {
     // initialize temp vars
     int i;
-    uint8_t buff[bytesNumber] = 0;
+    uint8_t buff[bytesNumber];
 
     // enable peripheral
-    DigitalWrite(ADSPI_CS, LOW);
+    digitalWrite(ADSPI_CS, LOW);
     
     // send command word
     SPI.transfer(data[0]);
@@ -107,7 +109,7 @@ unsigned char SPI_Read(unsigned char slaveDeviceId,
     }
     
     // disable peripheral
-    DigitalWrite(ADSPI_CS, HIGH);
+    digitalWrite(ADSPI_CS, HIGH);
 
     return bytesNumber;
 
@@ -130,7 +132,7 @@ unsigned char SPI_Write(unsigned char slaveDeviceId,
   int i;
   uint8_t command = data[0];
 
-  DigitalWrite(ADSPI_CS, LOW);
+  digitalWrite(ADSPI_CS, LOW);
 
   SPI.transfer(data[0]);
 
@@ -139,5 +141,6 @@ unsigned char SPI_Write(unsigned char slaveDeviceId,
     SPI.transfer(data[i]);
   }
 
+  digitalWrite(ADSPI_CS, HIGH);
   return bytesNumber;
 }
