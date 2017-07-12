@@ -43,6 +43,7 @@
 /******************************************************************************/
 #include "Communication.h"
 #include "AD7124.h"
+#include "Arduino.h"
 
 /* Error codes */
 #define INVALID_VAL -1 /* Invalid argument */
@@ -466,7 +467,8 @@ int32_t AD7124_Setup(ad7124_device *device, int slave_select,
 			ad7124_st_reg *regs)
 {
 	int32_t ret;
-	enum ad7124_registers regNr;
+	//enum ad7124_registers regNr;
+	int regInt;
 
 	if(!device || !regs)
 		return INVALID_VAL;
@@ -489,9 +491,14 @@ int32_t AD7124_Setup(ad7124_device *device, int slave_select,
 	device->check_ready = 1;
 
 	/* Initialize registers AD7124_ADC_Control through AD7124_Filter_7. */
-	for(regNr = AD7124_Status; (regNr < AD7124_Offset_0) && !(ret < 0);
-		regNr++)
+	// for(regNr = AD7124_Status; (regNr < AD7124_Offset_0) && !(ret < 0);
+	// 	regNr++)
+	
+
+	for(regInt = AD7124_Status; (regInt < AD7124_Offset_0) && !(ret < 0); regInt ++)
 	{
+		ad7124_registers regNr = static_cast<ad7124_registers>(regInt);
+
 		if (regs[regNr].rw == AD7124_RW)
 		{
 			ret = AD7124_WriteRegister(device, regs[regNr]);

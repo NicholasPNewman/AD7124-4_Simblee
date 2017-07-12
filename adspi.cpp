@@ -52,7 +52,7 @@ int adspiClass::verify()
 }
 
 // @brief: returns the contents of the status register
-uint8_t adspiClass::status() 
+uint8_t adspiClass::status(void) 
 {
   uint8_t dat_in;
   digitalWrite(ADSPI_CS, LOW);
