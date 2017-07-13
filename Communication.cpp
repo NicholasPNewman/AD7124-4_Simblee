@@ -103,9 +103,23 @@ unsigned char SPI_Read(unsigned char slaveDeviceId,
     SPI.transfer(data[0]);
     
     //  read in 'bytesNumber' of bytes
-    for (i = 1; i < bytesNumber; i++)
+    switch (bytesNumber) 
     {
-      data[i] = SPI.transfer(0);
+      case 1:
+        data[i] = SPI.transfer(0);
+        break;
+      case 2:
+        data[i] = SPI.transfer16(0);
+        break;
+      case 3:
+        data[i] = SPI.transfer24(0);
+        break;
+      default:
+        for (i = 1; i < bytesNumber; i++) 
+        {
+          data[i] = SPI.transfer(0);
+        }
+        break;
     }
     
     // disable peripheral
@@ -136,10 +150,24 @@ unsigned char SPI_Write(unsigned char slaveDeviceId,
 
   SPI.transfer(data[0]);
 
-  for (i = 1; i < bytesNumber; i++)
-  {
-    SPI.transfer(data[i]);
-  }
+    switch (bytesNumber) 
+    {
+      case 1:
+        SPI.transfer(data[i]);
+        break;
+      case 2:
+        SPI.transfer16(data[i]);
+        break;
+      case 3:
+        SPI.transfer24(data[i]);
+        break;
+      default:
+        for (i = 1; i < bytesNumber; i++) 
+        {
+          SPI.transfer(data[i]);
+        }
+        break;
+    }
 
   digitalWrite(ADSPI_CS, HIGH);
   return bytesNumber;
