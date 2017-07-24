@@ -2,10 +2,18 @@
 
 adspiClass adspi;
 
-void adspiClass::start(void){
+struct ad7124_device my_ad7124;                    /* A new driver instance */
+struct ad7124_device *ad7124_handler = &my_ad7124; /* A driver handle to pass around */
+
+int regInt;                                        /* Variable to iterate through registers */
+long timeout = 1000;                               /* Number of tries before a function times out */
+long ret = 0;                                      /* Return value */
+long sample;                                       /* Stores raw value read from the ADC */
+
+void adspiClass::begin(void){
   pinMode(ADSPI_CS, OUTPUT);
   start_exclk(ADSPI_EXCLK);
-  // start_timer();
+  //start_timer();
 }
 
 int adspiClass::comm(int command, int value) 
@@ -233,6 +241,86 @@ void adspiClass::control_cfg(int clk_sel, int mode, int power, int ref_en, int c
   digitalWrite(ADSPI_CS, HIGH);
 }
 
+double adspiClass::D2V_Diff(int32_t val)
+{
+  double bits = pow(2,23);
+  double V_ref = 3.3;
+  double gain = 1;
+ 
+  return ((val/bits) - 1)*(V_ref / gain);
+}
+
+double adspiClass::D2V_Sing(int32_t val)
+{
+  double bits = pow(2,24);
+  double V_ref = 3.3;
+  double gain = 1;
+
+  return ((val * V_ref) / (bits * gain));
+}
+
+void adspiClass::adc_setup(void)
+{
+  ret = AD7124_Setup(ad7124_handler, AD7124_SLAVE_ID, (ad7124_st_reg *)&ad7124_regs);
+  if (ret < 0)
+  {
+    /* AD7124 initialization failed, check the value of ret! */
+    Serial.print("Initialization failed, error code: ");
+    Serial.println(ret);
+  }
+  else
+  {
+    //Serial.println("Initialization successful.");
+  } 
+}
+
+void adspiClass::print_regs(void)
+{
+  for (regInt = AD7124_Status; (regInt < AD7124_REG_NO) && !(ret < 0); regInt++)
+  {   
+    ad7124_registers regNr = static_cast<ad7124_registers>(regInt);
+    int dummy = ad7124_regs[regNr].value;
+    Serial.print(regInt, HEX);
+    Serial.print(" : 0x");
+    Serial.println(dummy, HEX);
+  }
+}
+
+void adspiClass::read_regs(void)
+{
+  for (regInt = AD7124_Status; (regInt < AD7124_REG_NO) && !(ret < 0); regInt++)
+  {
+    ad7124_registers regNr = static_cast<ad7124_registers>(regInt);
+    ret = AD7124_ReadRegister(ad7124_handler, &ad7124_regs[regNr]);
+    if (ret < 0) {
+      Serial.print(regInt);
+      Serial.print(", error code: ");
+      Serial.println(ret);
+    }
+  }
+}
+
+void adspiClass::print_data_wStatus(void)
+{
+    ret = AD7124_WaitForConvReady(ad7124_handler, timeout);
+    if (0)//ret < 0)
+    {
+        Serial.print("ConvReady error :");
+        Serial.println(ret);
+    }
+    ret = AD7124_ReadData(ad7124_handler, &sample);
+    if (ret < 0)
+    {
+      Serial.print("ReadData error :");
+      Serial.println(ret);
+    }
+    else
+    {
+      //Serial.println(ad7124_regs[AD7124_Data].value, HEX);
+      Serial.println(D2V_Sing(ad7124_regs[AD7124_Data].value), 7);
+    } 
+}
+
 void adspiClass::start_exclk(int pin)
 {
   pinMode(pin, OUTPUT);
@@ -252,8 +340,8 @@ void adspiClass::start_exclk(int pin)
   NRF_TIMER2->TASKS_START = 1;
 }
 
-// void adspiClass::start_timer(void)
-// {
+// // start timer and interrupt handlers
+// void adspiClass::start_timer(void){
 //   NRF_TIMER0->TASKS_STOP = 1;               // stop timer
 //   NRF_TIMER0->MODE = TIMER_MODE_MODE_Timer; // set to Timer mode
 //   NRF_TIMER0->BITMODE = (TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos);
@@ -262,17 +350,14 @@ void adspiClass::start_exclk(int pin)
 //   NRF_TIMER0->CC[0] = 95;
 //   NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;
 //   NRF_TIMER0->SHORTS = (TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos);
-  
-//   // current unresolved issue line, TIMER_IRQHandler doesn't point properly to l#224 below
-//   // dynamic_attachInterrupt(TIMER0_IRQn, TIMER_IRQHandler);
+//   dynamic_attachInterrupt(TIMER0_IRQn, TIMER_IRQHandler);
 //   NRF_TIMER0->TASKS_START = 1;
 // }
 
-// void TIMER_IRQHandler(void){
+// static void adspiClass::TIMER_IRQHandler(void){
 //   if (NRF_TIMER0->EVENTS_COMPARE[0])
 //   {
 //     NRF_TIMER0->EVENTS_COMPARE[0] = 0;
 //     NRF_TIMER0->TASKS_CLEAR = 1;
-//     //data();
 //   }
 // }

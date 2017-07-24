@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 #include "SPI.h"
+#include "AD7124.h"
+#include "AD7124_regs.h"
 
 #ifndef ADSPI_CS
 #define ADSPI_CS (21)
@@ -54,27 +56,33 @@
 // function definitions
 
 class adspiClass {
-public:
-  void      start(void);
-  int       verify(void);
-  int       comm(int command, int value);
-  void      reset(void); 
-  uint8_t   status(void);
-  uint16_t  control(void);
-  uint8_t   channels(int channel_n); 
-  uint8_t   err(void);
-  uint16_t  getconfig(int setup_n);
-  int       getfilter(int setup_n);
-  int       data(void);
-  int       data_cont_read(void);
-  void      channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, int c_ainm);
-  void      setup_cfg(int setup_n);
-  void      diag_cfg(int config_n);
-  void      control_cfg(int clk_sel, int mode, int power, int ref_en, int cs_en, int data_status, int cont_read, int dout_rdy);
-private:
-  void      start_exclk(int pin);
-  void      start_timer(void);
-  void      TIMER_IRQHandler(void);
+ public:
+  void          begin(void);
+  int           verify(void);
+  int           comm(int command, int value);
+  void          reset(void); 
+  uint8_t       status(void);
+  uint16_t      control(void);
+  uint8_t       channels(int channel_n); 
+  uint8_t       err(void);
+  uint16_t      getconfig(int setup_n);
+  int           getfilter(int setup_n);
+  int           data(void);
+  int           data_cont_read(void);
+  void          channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, int c_ainm);
+  void          setup_cfg(int setup_n);
+  void          diag_cfg(int config_n);
+  void          control_cfg(int clk_sel, int mode, int power, int ref_en, int cs_en, int data_status, int cont_read, int dout_rdy);
+  double        D2V_Diff(int32_t val);
+  double        D2V_Sing(int32_t val);
+  void          adc_setup(void);
+  void          print_regs(void);
+  void          read_regs(void);
+  void          print_data_wStatus(void);
+ private:
+  void          start_exclk(int pin);
+  void          start_timer(void);
+  static void   TIMER_IRQHandler(void);
 
 };
 
