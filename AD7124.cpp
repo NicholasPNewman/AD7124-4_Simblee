@@ -85,7 +85,7 @@ int32_t AD7124_NoCheckReadRegister(ad7124_device *device, ad7124_st_reg* pReg)
 		return ret;
 
 	/* Check the CRC */
-	if(0) //device->useCRC == AD7124_USE_CRC)
+	if(device->useCRC == AD7124_USE_CRC)
 	{
 		msgBuf[0] = AD7124_COMM_REG_WEN | AD7124_COMM_REG_RD | 
 		  		AD7124_COMM_REG_RA(pReg->addr);
