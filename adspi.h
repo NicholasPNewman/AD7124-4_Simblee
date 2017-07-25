@@ -68,6 +68,7 @@ class adspiClass {
   uint16_t      getconfig(int setup_n);
   int           getfilter(int setup_n);
   int           data(void);
+  void          setup_cont_read(void);
   int           data_cont_read(void);
   void          channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, int c_ainm);
   void          setup_cfg(int setup_n);
@@ -79,6 +80,8 @@ class adspiClass {
   void          print_regs(void);
   void          read_regs(void);
   void          print_data_wStatus(void);
+  int32_t       cont_read_data(int32_t* data_buff);
+
  private:
   void          start_exclk(int pin);
   void          start_timer(void);

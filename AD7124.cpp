@@ -157,7 +157,7 @@ int32_t AD7124_NoCheckWriteRegister(ad7124_device *device, ad7124_st_reg reg)
 			wrBuf,
 			(device->useCRC != AD7124_DISABLE_CRC) ? reg.size + 2
 							: reg.size + 1);
-
+	
 	return ret;
 }
 
@@ -367,6 +367,7 @@ int32_t AD7124_ReadData(ad7124_device *device, int32_t* pData)
 	return ret;
 }
 
+
 /***************************************************************************//**
 * @brief Computes the CRC checksum for a data buffer.
 *
@@ -476,7 +477,7 @@ int32_t AD7124_Setup(ad7124_device *device, int slave_select,
 	device->regs = regs;
 	device->slave_select_id = slave_select;
 	device->spi_rdy_poll_cnt = 25000;
-	
+	  
 	/* Initialize the SPI communication. */
 	ret = SPI_Init(0, 4000000, 1, 0);
 	if (ret < 0)
@@ -494,15 +495,15 @@ int32_t AD7124_Setup(ad7124_device *device, int slave_select,
 	// for(regNr = AD7124_Status; (regNr < AD7124_Offset_0) && !(ret < 0);
 	// 	regNr++)
 
-
+	
 	for(regInt = AD7124_Status; (regInt < AD7124_Offset_0) && !(ret < 0); regInt ++)
 	{
 		ad7124_registers regNr = static_cast<ad7124_registers>(regInt);
-
 		if (regs[regNr].rw == AD7124_RW)
 		{
 			ret = AD7124_WriteRegister(device, regs[regNr]);
 			if (ret < 0)
+
 		  		break;
 		}
 		

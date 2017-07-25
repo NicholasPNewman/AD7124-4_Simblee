@@ -49,14 +49,9 @@ int adspiClass::verify()
   uint8_t dat_valid = 4;
   digitalWrite(ADSPI_CS, LOW);
   SPI.transfer(COMM_R_ID);
-  if (SPI.transfer(0) == dat_valid) {
-    digitalWrite(ADSPI_CS, HIGH);
-    return 1;
-  }
-  else {
-    digitalWrite(ADSPI_CS, HIGH);
-    return 0;
-  }
+  dat_in = SPI.transfer(0);
+  return dat_in;
+  digitalWrite(ADSPI_CS, HIGH);
 }
 
 // @brief: returns the contents of the status register
@@ -145,7 +140,7 @@ int adspiClass::getfilter(int setup_n)
   return dat_24;  
 }
 
-// @breif: request data and read 24-bit converted value
+// @breif: request data and read 24-bit converted value DEPRECATED
 int adspiClass::data() 
 {
   uint8_t dat_in1;
@@ -162,17 +157,29 @@ int adspiClass::data()
   return dat_24;  
 }
 
+// @breif: writes to the control register to set up continuous read mode
+// TODO: OR 0x800 into current control val to accomodate new setups
+// ALWAYS follow with desired number of data_cont_read fxs
+void adspiClass::setup_cont_read(void)
+{
+  int16_t command = 0x9C3;
+  digitalWrite(ADSPI_CS, LOW);
+  SPI.transfer(COMM_W_CTRL);
+  SPI.transfer16(command);
+}
+
+
+// @brief: read data during CS low part of continuous read
 int adspiClass::data_cont_read() 
 {
   uint8_t dat_in1;
   uint8_t dat_in2;
   uint8_t dat_in3;
   int dat_24;
-  digitalWrite(ADSPI_CS, LOW);
   dat_in1 = SPI.transfer(0);
   dat_in2 = SPI.transfer(0);
   dat_in3 = SPI.transfer(0);
-  dat_24 = (dat_in1 << 16) + (dat_in2 << 8) + dat_in3;
+  dat_24 = (dat_in1 << 16) | (dat_in2 << 8) | dat_in3;
   return dat_24;  
 }
 // @brief: configure an individual channel
@@ -319,6 +326,11 @@ void adspiClass::print_data_wStatus(void)
       //Serial.println(ad7124_regs[AD7124_Data].value, HEX);
       Serial.println(D2V_Sing(ad7124_regs[AD7124_Data].value), 7);
     } 
+}
+
+int32_t adspiClass::cont_read_data(int32_t* data_buff)
+{
+  return AD7124_ReadData(ad7124_handler, data_buff);
 }
 
 void adspiClass::start_exclk(int pin)

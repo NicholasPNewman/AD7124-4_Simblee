@@ -103,7 +103,7 @@ unsigned char SPI_Read(unsigned char slaveDeviceId,
     SPI.transfer(data[0]);
     
     //  read in 'bytesNumber' of bytes
-    switch (bytesNumber) 
+    switch (bytesNumber - 1) 
     {
       case 1:
         data[i] = SPI.transfer(0);
@@ -111,9 +111,9 @@ unsigned char SPI_Read(unsigned char slaveDeviceId,
       case 2:
         data[i] = SPI.transfer16(0);
         break;
-      case 3:
-        data[i] = SPI.transfer24(0);
-        break;
+      // case 3:
+      //   data[i] = SPI.transfer24(0);
+      //   break;
       default:
         for (i = 1; i < bytesNumber; i++) 
         {
@@ -145,23 +145,33 @@ unsigned char SPI_Write(unsigned char slaveDeviceId,
   // initialize temp vars
   int i;
   uint8_t command = data[0];
-
+  uint8_t transfer_one = 0;
+  uint16_t transfer_two = 0;
+  uint32_t transfer_three = 0;
   digitalWrite(ADSPI_CS, LOW);
 
-  SPI.transfer(data[0]);
-
-    switch (bytesNumber) 
+  SPI.transfer(command);
+  
+    switch (bytesNumber - 1) 
     {
+
       case 1:
+        transfer_one = data[1];
         SPI.transfer(data[i]);
         break;
       case 2:
-        SPI.transfer16(data[i]);
+        transfer_two = (data[1] << 8) | (data[2]);
+        SPI.transfer16(transfer_two);
         break;
-      case 3:
-        SPI.transfer24(data[i]);
-        break;
+      // case 3:
+      // Serial.println("three");
+      //   transfer_three = (data[1] << 16) | (data[2] << 8) | data[3];
+      //   Serial.println("please");
+      //   SPI.transfer24(transfer_three);
+      //   Serial.println("again");
+      //   break;
       default:
+
         for (i = 1; i < bytesNumber; i++) 
         {
           SPI.transfer(data[i]);
@@ -170,5 +180,6 @@ unsigned char SPI_Write(unsigned char slaveDeviceId,
     }
 
   digitalWrite(ADSPI_CS, HIGH);
+
   return bytesNumber;
 }
