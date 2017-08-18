@@ -76,10 +76,12 @@ class adspiClass {
   void          control_cfg(int clk_sel, int mode, int power, int ref_en, int cs_en, int data_status, int cont_read, int dout_rdy);
   double        D2V_Diff(int32_t val);
   double        D2V_Sing(int32_t val);
-  void          adc_setup(void);
+  int32_t       update_reg_val(ad7124_st_reg* pReg);
   void          print_regs(void);
   void          read_regs(void);
   void          print_data_wStatus(void);
+  void          print_data_nStatus(void);
+  int           SetPGA(int gain, int setup);
   int32_t       cont_read_data(int32_t* data_buff);
 
  private:

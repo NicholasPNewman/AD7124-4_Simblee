@@ -14,6 +14,18 @@ void adspiClass::begin(void){
   pinMode(ADSPI_CS, OUTPUT);
   start_exclk(ADSPI_EXCLK);
   //start_timer();
+
+  ret = AD7124_Setup(ad7124_handler, AD7124_SLAVE_ID, (ad7124_st_reg *)&ad7124_regs);
+  if (ret < 0)
+  {
+    /* AD7124 initialization failed, check the value of ret! */
+    Serial.print("Initialization failed, error code: ");
+    Serial.println(ret);
+  }
+  else
+  {
+    //Serial.println("Initialization successful.");
+  } 
 }
 
 int adspiClass::comm(int command, int value) 
@@ -50,7 +62,7 @@ int adspiClass::verify()
   digitalWrite(ADSPI_CS, LOW);
   SPI.transfer(COMM_R_ID);
   dat_in = SPI.transfer(0);
-  return dat_in;
+  return (dat_in == dat_valid);
   digitalWrite(ADSPI_CS, HIGH);
 }
 
@@ -162,7 +174,7 @@ int adspiClass::data()
 // ALWAYS follow with desired number of data_cont_read fxs
 void adspiClass::setup_cont_read(void)
 {
-  int16_t command = 0x9C3;
+  int16_t command = 0x800;
   digitalWrite(ADSPI_CS, LOW);
   SPI.transfer(COMM_W_CTRL);
   SPI.transfer16(command);
@@ -266,19 +278,10 @@ double adspiClass::D2V_Sing(int32_t val)
   return ((val * V_ref) / (bits * gain));
 }
 
-void adspiClass::adc_setup(void)
+int32_t adspiClass::update_reg_val(ad7124_st_reg* pReg)
 {
-  ret = AD7124_Setup(ad7124_handler, AD7124_SLAVE_ID, (ad7124_st_reg *)&ad7124_regs);
-  if (ret < 0)
-  {
-    /* AD7124 initialization failed, check the value of ret! */
-    Serial.print("Initialization failed, error code: ");
-    Serial.println(ret);
-  }
-  else
-  {
-    //Serial.println("Initialization successful.");
-  } 
+  ret = AD7124_ReadRegister(ad7124_handler, pReg);
+  return ret;
 }
 
 void adspiClass::print_regs(void)
@@ -328,9 +331,94 @@ void adspiClass::print_data_wStatus(void)
     } 
 }
 
+void adspiClass::print_data_nStatus(void)
+{
+    ret = AD7124_NoCheckReadRegister(ad7124_handler, &ad7124_regs[AD7124_Data]);
+    if (ret < 0)
+    {
+      Serial.print("ReadData error :");
+      Serial.println(ret);
+    }
+    else
+    {
+      Serial.println(D2V_Sing(ad7124_regs[AD7124_Data].value), 7);
+    } 
+}
+
 int32_t adspiClass::cont_read_data(int32_t* data_buff)
 {
   return AD7124_ReadData(ad7124_handler, data_buff);
+  if (ret < 0)  
+  {
+    Serial.print("ReadData error :");
+    Serial.println(ret);
+  }
+  else
+  {
+
+  }
+}
+
+int adspiClass::SetPGA(int gain, int setup)
+{
+  int code = 0;
+  uint32_t command = 0;
+  
+  if ((setup < 0) || (setup > 8)){
+    return (-3);
+  }
+
+  ad7124_registers regNr = static_cast<ad7124_registers>(AD7124_CFG0_REG);
+
+  switch (gain) {
+    case (1):
+    {
+      code = 0;
+      break;
+    }
+    case (2):
+    {
+      code = 1;
+      break;
+    }
+    case (4):
+    {
+      code = 2;
+      break;
+    }
+    case (8):
+    {
+      code = 3;
+      break;
+    }
+    case (16):
+    {
+      code = 4;
+      break;
+    }
+    case (32):
+    {
+      code = 5;
+      break;
+    }
+    case (64):
+    {
+      code = 6;
+      break;
+    }
+    case (128):
+    {
+      code = 7;
+      break;
+    }
+    default:
+      return (-4);
+  }
+  
+  command = ((ad7124_regs[AD7124_CFG0_REG + setup].value & 0xFFF8) | code);
+  ad7124_regs[regNr].value = command;
+  return AD7124_WriteRegister(ad7124_handler, ad7124_regs[regNr]);
+
 }
 
 void adspiClass::start_exclk(int pin)
