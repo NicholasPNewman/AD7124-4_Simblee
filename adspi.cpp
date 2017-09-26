@@ -182,6 +182,7 @@ void adspiClass::setup_cont_read(void)
 
 
 // @brief: read data during CS low part of continuous read
+// ONLY USE during continuous read operation, special behavior of CS pin
 int adspiClass::data_cont_read() 
 {
   uint8_t dat_in1;
@@ -222,16 +223,17 @@ void adspiClass::channel_cfg(int channel_n, int c_en, int c_setup, int c_ainp, i
 // @brief: configure an individual setup
 void adspiClass::setup_cfg(int setup_n) 
 {
-  // TODO: implement
+  // Deprecated. Use RegEdit
 }
 
 // @brief: configure system diagnostics
 void adspiClass::diag_cfg(int config_n) 
 {
-  // TODO: implement
+  // Deprecated. Use RegEdit
 }
 
 // @brief: configure  ADC control
+// Used to bypass RegEdit for faster control register writes. Use datasheet for inputs.
 void adspiClass::control_cfg(int clk_sel, int mode, int power, int ref_en, int cs_en, int data_status,
                        int cont_read, int dout_rdy) 
 {
@@ -260,6 +262,8 @@ void adspiClass::control_cfg(int clk_sel, int mode, int power, int ref_en, int c
   digitalWrite(ADSPI_CS, HIGH);
 }
 
+// @brief: digital code to voltage: differential.
+// translates the conversion code into a voltage. Accurate to .001V at gain = 1. Full scale configuration improves this number.
 double adspiClass::D2V_Diff(int32_t val)
 {
   double bits = pow(2,23);
@@ -269,6 +273,8 @@ double adspiClass::D2V_Diff(int32_t val)
   return ((val/bits) - 1)*(V_ref / gain);
 }
 
+// @brief: digital code to voltage: single-ended.
+// translates the conversion code into a voltage. Accurate to .001V at gain = 1. Full scale configuration improves this number.
 double adspiClass::D2V_Sing(int32_t val)
 {
   double bits = pow(2,24);
@@ -278,12 +284,16 @@ double adspiClass::D2V_Sing(int32_t val)
   return ((val * V_ref) / (bits * gain));
 }
 
+// @breif: reads a single register and updates its value in the AD7124_regs struct
+// returns error code (>0 success)
 int32_t adspiClass::update_reg_val(ad7124_st_reg* pReg)
 {
   ret = AD7124_ReadRegister(ad7124_handler, pReg);
   return ret;
 }
 
+// @brief: prints the contents of the AD7124_regs struct. Does not update registers,
+// user after read_regs() to ensure accurate reporting
 void adspiClass::print_regs(void)
 {
   for (regInt = AD7124_Status; (regInt < AD7124_REG_NO) && !(ret < 0); regInt++)
@@ -296,6 +306,8 @@ void adspiClass::print_regs(void)
   }
 }
 
+// @breif: reads all the register contents of the AD7124. Updates the
+// AD7124_regs struct, best used in concert with print_regs().
 void adspiClass::read_regs(void)
 {
   for (regInt = AD7124_Status; (regInt < AD7124_REG_NO) && !(ret < 0); regInt++)
@@ -310,6 +322,8 @@ void adspiClass::read_regs(void)
   }
 }
 
+// @brief: in continuous-conversion mode, monitors the status register for data_ready pin active
+// then reads the data register. Prints via serial monitor.
 void adspiClass::print_data_wStatus(void)
 {
     ret = AD7124_WaitForConvReady(ad7124_handler, timeout);
@@ -331,6 +345,8 @@ void adspiClass::print_data_wStatus(void)
     } 
 }
 
+// @brief: in continuous-conversion mode, reads the data register, no check. 
+// Best used within DRDY pin pin interrupt handler. Prints via serial monitor.
 void adspiClass::print_data_nStatus(void)
 {
     ret = AD7124_NoCheckReadRegister(ad7124_handler, &ad7124_regs[AD7124_Data]);
@@ -345,20 +361,8 @@ void adspiClass::print_data_nStatus(void)
     } 
 }
 
-int32_t adspiClass::cont_read_data(int32_t* data_buff)
-{
-  return AD7124_ReadData(ad7124_handler, data_buff);
-  if (ret < 0)  
-  {
-    Serial.print("ReadData error :");
-    Serial.println(ret);
-  }
-  else
-  {
-
-  }
-}
-
+// @breif: edits the AD7124_regs struct to configure PGA to preset values.
+// accepts gain arguments of (1, 2, 4... ...64, 128). Use outside of continuous-reads.
 int adspiClass::SetPGA(int gain, int setup)
 {
   int code = 0;
@@ -421,6 +425,7 @@ int adspiClass::SetPGA(int gain, int setup)
 
 }
 
+// @brief: starts the 4MHz external clock (1MHz IC internally divided). Default output via pin 14.
 void adspiClass::start_exclk(int pin)
 {
   pinMode(pin, OUTPUT);
@@ -440,7 +445,9 @@ void adspiClass::start_exclk(int pin)
   NRF_TIMER2->TASKS_START = 1;
 }
 
-// // start timer and interrupt handlers
+// @brief: start timer and interrupt handlers. Default 10kHz interrupt.
+// odd error when compiled outside of Arduino IDE, to use insert function without adspiClass:: header into sketch
+ 
 // void adspiClass::start_timer(void){
 //   NRF_TIMER0->TASKS_STOP = 1;               // stop timer
 //   NRF_TIMER0->MODE = TIMER_MODE_MODE_Timer; // set to Timer mode
@@ -453,6 +460,8 @@ void adspiClass::start_exclk(int pin)
 //   dynamic_attachInterrupt(TIMER0_IRQn, TIMER_IRQHandler);
 //   NRF_TIMER0->TASKS_START = 1;
 // }
+
+// @brief: timer interrupt handler. 2.6us startup time, ~1us latency.
 
 // static void adspiClass::TIMER_IRQHandler(void){
 //   if (NRF_TIMER0->EVENTS_COMPARE[0])
